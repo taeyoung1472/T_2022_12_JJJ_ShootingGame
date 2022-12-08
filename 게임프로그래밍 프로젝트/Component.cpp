@@ -1,0 +1,22 @@
+#include "pch.h"
+#include "Component.h"
+#include "Transform.h"
+#include "GameObject.h"
+
+Component::Component(COMPONENT_TYPE type) : Object(OBJECT_TYPE::COMPONENT), m_type(type)
+{
+}
+
+Component::~Component()
+{
+}
+
+shared_ptr<GameObject> Component::GetGameObject()
+{
+	return m_gameObject.lock();
+}
+
+shared_ptr<Transform> Component::GetTransform()
+{
+	return m_gameObject.lock()->GetComponent<Transform>(COMPONENT_TYPE::TRANSFORM);
+}
