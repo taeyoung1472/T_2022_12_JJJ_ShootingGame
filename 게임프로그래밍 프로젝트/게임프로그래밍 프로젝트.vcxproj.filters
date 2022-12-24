@@ -129,9 +129,6 @@
     <ClInclude Include="SoundManager.h">
       <Filter>소스 파일\01.Utility\Manager</Filter>
     </ClInclude>
-    <ClInclude Include="Slider.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="EnemyController.h">
       <Filter>소스 파일\05.Script</Filter>
     </ClInclude>
@@ -143,6 +140,9 @@
     </ClInclude>
     <ClInclude Include="Item.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Slider.h">
+      <Filter>소스 파일\04.Object\Component</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -218,9 +218,6 @@
     <ClCompile Include="SoundManager.cpp">
       <Filter>소스 파일\01.Utility\Manager</Filter>
     </ClCompile>
-    <ClCompile Include="Slider.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="EnemyController.cpp">
       <Filter>소스 파일\05.Script</Filter>
     </ClCompile>
@@ -229,6 +226,9 @@
     </ClCompile>
     <ClCompile Include="Item.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Slider.cpp">
+      <Filter>소스 파일\04.Object\Component</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
