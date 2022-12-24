@@ -8,6 +8,12 @@
 #include "Sprite.h"
 #include "Math.h"
 #include "GameLogic.h"
+#include "Bullet.h"
+#include "Math.h"
+#include "Scene.h"
+#include "SceneManager.h"
+#include "Collider.h"
+#include "SoundManager.h"
 
 Gun::Gun()
 {
@@ -19,6 +25,7 @@ Gun::~Gun()
 
 void Gun::Awake()
 {
+	SoundManager::GetInst()->LoadSound(L"GunFire", false, L"Audio\\GunFire.wav");
 	shared_ptr<Sprite> gunSprite = ResourceManager::GetInst()->Load<Sprite>(L"GunSprite", L"Sprite\\ARShoot.bmp");
 	gunSprite->SetPixelPerfect(64);
 	gunSprite->SetRow(16);
@@ -27,7 +34,7 @@ void Gun::Awake()
 	originPos = GetTransform()->GetLocalPosition();
 	knockBackPos = originPos - Vector2(20, 0);
 
-	GetGameObject()->GetComponent<SpriteRendere>(COMPONENT_TYPE::SPRITERENDERE)->SetSprite(m_gunSprite);
+	GetGameObject()->GetComponent<SpriteRendere>()->SetSprite(m_gunSprite);
 	originY = GetTransform()->y;
 }
 
@@ -40,9 +47,9 @@ void Gun::Update()
 		{
 			if (m_timer > m_fireDelay * ((float)i / (float)row))
 			{
-				m_gunSprite->SetCurRow(i);
+				GetGameObject()->GetComponent<SpriteRendere>()->SetRow(i);
 				if (i == row) {
-					m_gunSprite->SetCurRow(0);
+					GetGameObject()->GetComponent<SpriteRendere>()->SetRow(0);
 					isFire = false;
 				}
 				break;
@@ -64,24 +71,31 @@ void Gun::Update()
 
 	if (Input->GetKey(KeyCode::LBUTTON) && m_timer > m_fireDelay && !isFire)
 	{
+		shared_ptr<GameObject> bullet = GameObject::Instantiate(GetTransform()->GetWorldPosition() + Vector2(40, -10));
+
+		Vector2 dir = Normalize(Vector2(Input->GetMousePos()) - GetTransform()->GetWorldPosition() + Vector2(40, -10));
+
+		bullet->AddComponent<Bullet>(make_shared<Bullet>());
+		bullet->GetComponent<Bullet>()->SetDir(dir);
+		bullet->GetComponent<Bullet>()->SetSpeed(750);
+
+		bullet->AddComponent<SpriteRendere>(make_shared<SpriteRendere>());
+		shared_ptr<Sprite> bulletSprite = ResourceManager::GetInst()->Load<Sprite>(L"BulletSprite", L"Sprite\\Bullet.bmp");
+		bulletSprite->SetPixelPerfect(200);
+		bullet->GetComponent<SpriteRendere>()->SetSprite(bulletSprite);
+
+		bullet->AddComponent<Collider>(make_shared<Collider>());
+		bullet->GetComponent<Collider>()->SetSize(Vector2(25, 25));
+
+		SoundManager::GetInst()->Play(L"GunFire");
+
+		CurScene->AddGameObject(bullet);
+
 		isFire = true;
 		m_timer = 0.0f;
 	}
 
 	GetTransform()->y = originY + sin(Time->GetTime() * 5) * 5;
-
-	
-	WCHAR str[200];
-
-	int angle = 100;
-	Vector2 mousePos = Vector2(Input->GetMousePos().x, Input->GetMousePos().y);
-
-	Vector2 dir = Normalize(mousePos - GetTransform()->GetWorldPosition());
-
-	angle = atan2(dir.y, dir.x) * 57.2958f;
-
-	wsprintf(str, L"Angle : %d", angle);
-	TextOut(GameLogic::GetInst()->GetHDC(), 10, 10, str, wcslen(str));
 
 	m_timer += Time->GetDeltaTime();
 }

@@ -16,12 +16,10 @@ public:
 	void SetRow(const int& value);
 	int GetRow();
 
-	int GetCurRow();
-	void SetCurRow(const int& value);
-
 	Vector2 GetSize();
 
 	HDC GetDC() { return m_hDC; }
+	HBITMAP GetBit() { return m_sprite; }
 
 private:
 	HDC         m_hDC;
@@ -32,6 +30,5 @@ private:
 
 	int m_pixelPerfect = 100;
 	int m_row = 1;
-	int m_curRowIndex = 0;
 };
 

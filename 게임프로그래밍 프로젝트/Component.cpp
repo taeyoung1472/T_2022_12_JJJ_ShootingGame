@@ -3,7 +3,7 @@
 #include "Transform.h"
 #include "GameObject.h"
 
-Component::Component(COMPONENT_TYPE type) : Object(OBJECT_TYPE::COMPONENT), m_type(type)
+Component::Component() : Object(OBJECT_TYPE::COMPONENT)
 {
 }
 
@@ -18,5 +18,9 @@ shared_ptr<GameObject> Component::GetGameObject()
 
 shared_ptr<Transform> Component::GetTransform()
 {
-	return m_gameObject.lock()->GetComponent<Transform>(COMPONENT_TYPE::TRANSFORM);
+	if (m_transform == nullptr) 
+	{
+		m_transform = m_gameObject.lock()->GetComponent<Transform>();;
+	}
+	return m_transform;
 }

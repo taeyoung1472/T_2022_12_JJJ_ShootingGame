@@ -24,8 +24,10 @@ void Scene::Update()
 {
 	for (const shared_ptr<GameObject>& gameObject : m_gameObjects)
 	{
-		if (gameObject)
+		if (find(m_gameObjects.begin(), m_gameObjects.end(), gameObject) != m_gameObjects.end()) 
+		{
 			gameObject->Update();
+		}
 	}
 }
 
@@ -45,6 +47,8 @@ void Scene::FinalUpdate()
 		if (gameObject)
 			gameObject->FinalUpdate();
 	}
+
+	DestroyExcute();
 }
 
 void Scene::Render()
@@ -65,11 +69,24 @@ void Scene::AddGameObject(shared_ptr<GameObject> gameObject)
 	gameObject->Start();
 }
 
-void Scene::RemoveGameObject(shared_ptr<GameObject> gameObject)
+void Scene::Destroy(shared_ptr<GameObject> gameObject)
 {
-	auto findIt = find(m_gameObjects.begin(), m_gameObjects.end(), gameObject);
+	m_destroyStack.push(gameObject);
+}
 
-	if (findIt != m_gameObjects.end()) {
-		m_gameObjects.erase(findIt);
+void Scene::DestroyExcute()
+{
+	while (!m_destroyStack.empty())
+	{
+		shared_ptr<GameObject> obj = m_destroyStack.front();
+
+		auto findIt = find(m_gameObjects.begin(), m_gameObjects.end(), obj);
+
+		if (findIt != m_gameObjects.end()) {
+			obj->Destroy();
+			m_gameObjects.erase(findIt);
+		}
+
+		m_destroyStack.pop();
 	}
 }

@@ -15,9 +15,11 @@ public:
 
 public:
 	void AddGameObject(shared_ptr<GameObject> gameObject);
-	void RemoveGameObject(shared_ptr<GameObject> gameObject);
+	void Destroy(shared_ptr<GameObject> gameObject);
+	void DestroyExcute();
 
 private:
 	vector<shared_ptr<GameObject>> m_gameObjects;
+	queue<shared_ptr<GameObject>> m_destroyStack;
 };
 

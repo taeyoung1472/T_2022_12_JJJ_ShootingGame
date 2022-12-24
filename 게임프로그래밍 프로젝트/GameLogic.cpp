@@ -8,51 +8,80 @@
 #include "SceneManager.h"
 #include "ResourceManager.h"
 #include "PathManager.h"
+#include "PhysicsManager.h"
+#include "SoundManager.h"
+#include "EnemySpawnManager.h"
 
 // Object
 #include "GameObject.h"
 #include "Component.h"
 #include "SpriteRendere.h"
+#include "Collider.h";
+#include "Slider.h"
 
 // Script
 #include "PlayerController.h"
 #include "Gun.h"
+#include "Random.h"
 
 GameLogic::GameLogic()
 	: m_Resolution{}
-	, m_hDC(0)
-	, m_memDC(0)
-	, m_hBit(0)
+	, m_memHdc(0)
+	, m_offHdc(0)
+	, m_offBit(0)
 {
 }
 
 GameLogic::~GameLogic()
 {
-	ReleaseDC(m_hWnd, m_hDC);
+	ReleaseDC(m_hWnd, m_memHdc);
 }
 
 int GameLogic::Init(HWND _hWnd, POINT _ptResolution)
 {
 	m_hWnd = _hWnd;
 	m_Resolution = _ptResolution;
-	m_hDC = GetDC(m_hWnd);
 
-	m_hBit = CreateCompatibleBitmap(m_hDC, m_Resolution.x, m_Resolution.y);
-	m_memDC = CreateCompatibleDC(m_hDC);
-	SelectObject(m_memDC, m_hBit);
+	m_memHdc = GetDC(m_hWnd);
+
+	m_offHdc = CreateCompatibleDC(m_memHdc);
+	m_offBit = CreateCompatibleBitmap(m_memHdc, m_Resolution.x, m_Resolution.y);
+	
+	SelectObject(m_offHdc, m_offBit);
 
 	// TODO : 초기화 과정
 	Time->Init();
 	Input->Init(m_hWnd);
 	PathManager::GetInst()->Init();
+	SoundManager::GetInst()->Init();
+	SoundManager::GetInst()->LoadSound(L"BGM", true, L"Audio\\BGM.wav");
+	SoundManager::GetInst()->Play(L"BGM");
+	EnemySpawnManager::GetInst()->Init();
 
 	// TODO : Scene 생성
 	shared_ptr<Scene> sampleScene = make_shared<Scene>();
 
 	// TODO : 게임 준비 과정
+
+#pragma region GameObject
+#pragma region Background
+	{
+		Vector2 resolution = GetResolution();
+
+		shared_ptr<GameObject> background = GameObject::Instantiate(Vector2(resolution.x / 2, resolution.y / 2));
+
+		shared_ptr<Sprite> backgroundSprit = ResourceManager::GetInst()->Load<Sprite>(L"backgroundSprite", L"Sprite\\background.bmp");
+		backgroundSprit->SetPixelPerfect(25);
+
+		background->AddComponent<SpriteRendere>(make_shared<SpriteRendere>());
+		background->GetComponent<SpriteRendere>()->SetSprite(backgroundSprit);
+
+		sampleScene->AddGameObject(background);
+	}
+#pragma endregion
+
 #pragma region Player
-	shared_ptr<GameObject> player = make_shared<GameObject>();
-	player->AddComponent<Transform>(make_shared<Transform>());
+	shared_ptr<GameObject> player = GameObject::Instantiate();
 	player->AddComponent<PlayerController>(make_shared<PlayerController>());
 
 	player->AddComponent<SpriteRendere>(make_shared<SpriteRendere>());
@@ -60,18 +89,21 @@ int GameLogic::Init(HWND _hWnd, POINT _ptResolution)
 	playerSprite->SetPixelPerfect(16);
 	playerSprite->SetRow(4);
 
-	player->GetComponent<SpriteRendere>(COMPONENT_TYPE::SPRITERENDERE)->SetSprite(playerSprite);
+	player->AddComponent<Collider>(make_shared<Collider>());
+	player->GetComponent<Collider>()->SetSize(Vector2(75, 75));
+	player->GetComponent<Collider>()->SetCenter(Vector2(0, 35));
+
+	player->GetComponent<SpriteRendere>()->SetSprite(playerSprite);
+
+	player->SetTag(L"Player");
 
 	sampleScene->AddGameObject(player);
 #pragma endregion
 
 #pragma region Gun
-	shared_ptr<GameObject> gun = make_shared<GameObject>();
-	gun->AddComponent<Transform>(make_shared<Transform>());
+	shared_ptr<GameObject> gun = GameObject::Instantiate(Vector2(75, 52), player->GetTransform());
 	gun->AddComponent<SpriteRendere>(make_shared<SpriteRendere>());
 	gun->AddComponent<Gun>(make_shared<Gun>());
-	gun->GetComponent<Transform>(COMPONENT_TYPE::TRANSFORM)->SetParent(player->GetComponent<Transform>(COMPONENT_TYPE::TRANSFORM));
-	gun->GetComponent<Transform>(COMPONENT_TYPE::TRANSFORM)->SetLocalPosition(Vector2(75, 52));
 
 	sampleScene->AddGameObject(gun);
 #pragma endregion
@@ -82,26 +114,95 @@ int GameLogic::Init(HWND _hWnd, POINT _ptResolution)
 
 		handSprite->SetPixelPerfect(80);
 
-		shared_ptr<GameObject> FrontHand = make_shared<GameObject>();
+		shared_ptr<GameObject> FrontHand = GameObject::Instantiate(Vector2(-10, -2), gun->GetTransform());
 		FrontHand->AddComponent<SpriteRendere>(make_shared<SpriteRendere>());
-		FrontHand->AddComponent<Transform>(make_shared<Transform>());
-		FrontHand->GetComponent<Transform>(COMPONENT_TYPE::TRANSFORM)->SetParent(gun->GetComponent<Transform>(COMPONENT_TYPE::TRANSFORM));
-		FrontHand->GetComponent<Transform>(COMPONENT_TYPE::TRANSFORM)->SetLocalPosition(Vector2(-10, -2));
-		FrontHand->GetComponent<SpriteRendere>(COMPONENT_TYPE::SPRITERENDERE)->SetSprite(handSprite);
+		FrontHand->GetComponent<SpriteRendere>()->SetSprite(handSprite);
 
 		sampleScene->AddGameObject(FrontHand);
 
-		shared_ptr<GameObject> BehindHand = make_shared<GameObject>();
+		shared_ptr<GameObject> BehindHand = GameObject::Instantiate(Vector2(-50, 10), gun->GetTransform());
 		BehindHand->AddComponent<SpriteRendere>(make_shared<SpriteRendere>());
-		BehindHand->AddComponent<Transform>(make_shared<Transform>());
-		BehindHand->GetComponent<Transform>(COMPONENT_TYPE::TRANSFORM)->SetParent(gun->GetComponent<Transform>(COMPONENT_TYPE::TRANSFORM));
-		BehindHand->GetComponent<Transform>(COMPONENT_TYPE::TRANSFORM)->SetLocalPosition(Vector2(-50, 10));
-		BehindHand->GetComponent<SpriteRendere>(COMPONENT_TYPE::SPRITERENDERE)->SetSprite(handSprite);
+		BehindHand->GetComponent<SpriteRendere>()->SetSprite(handSprite);
 
 		sampleScene->AddGameObject(BehindHand);
 	}
 #pragma endregion
 
+#pragma region Border
+	{
+		Vector2 resolution = GetResolution();
+		float borderSpace = 100;
+
+		// Right
+		{
+			shared_ptr<GameObject> border = GameObject::Instantiate(Vector2(-borderSpace / 2, resolution.y / 2));
+
+			border->AddComponent<Collider>(make_shared<Collider>());
+			border->GetComponent<Collider>()->SetSize(Vector2(borderSpace, resolution.y));
+
+			sampleScene->AddGameObject(border);
+		}
+		// Left
+		{
+			shared_ptr<GameObject> border = GameObject::Instantiate(Vector2(resolution.x + borderSpace / 2, resolution.y / 2));
+
+			border->AddComponent<Collider>(make_shared<Collider>());
+			border->GetComponent<Collider>()->SetSize(Vector2(borderSpace, resolution.y));
+
+			sampleScene->AddGameObject(border);
+		}
+		// Up
+		{
+			shared_ptr<GameObject> border = GameObject::Instantiate(Vector2(resolution.x / 2, -borderSpace / 2));
+
+			border->AddComponent<Collider>(make_shared<Collider>());
+			border->GetComponent<Collider>()->SetSize(Vector2(resolution.x, borderSpace));
+
+			sampleScene->AddGameObject(border);
+		}
+		// Right
+		{
+			shared_ptr<GameObject> border = GameObject::Instantiate(Vector2(resolution.x / 2, resolution.y + borderSpace / 2));
+
+			border->AddComponent<Collider>(make_shared<Collider>());
+			border->GetComponent<Collider>()->SetSize(Vector2(resolution.x, borderSpace));
+
+			sampleScene->AddGameObject(border);
+		}
+	}
+#pragma endregion
+#pragma endregion
+
+#pragma region UI/UX
+
+#pragma region HpSlider
+
+	{
+		Vector2 displayPos = Vector2(425, 675);
+
+		shared_ptr<GameObject> hpSliderBackground = GameObject::Instantiate(displayPos);
+		hpSliderBackground->AddComponent<SpriteRendere>(make_shared<SpriteRendere>());
+		shared_ptr<Sprite> sliderBackgroundSprite = ResourceManager::GetInst()->Load<Sprite>(L"hpSliderBackground", L"Sprite\\hpSliderBackground.bmp");
+		sliderBackgroundSprite->SetPixelPerfect(16);
+		hpSliderBackground->GetComponent<SpriteRendere>()->SetSprite(sliderBackgroundSprite);
+		sampleScene->AddGameObject(hpSliderBackground);
+
+
+		shared_ptr<GameObject> hpSliderFill = GameObject::Instantiate(displayPos);
+		hpSliderFill->AddComponent<Slider>(make_shared<Slider>());
+		shared_ptr<Sprite> sliderFillSprite = ResourceManager::GetInst()->Load<Sprite>(L"hpSliderFill", L"Sprite\\hpSliderFill.bmp");
+		sliderFillSprite->SetPixelPerfect(16);
+		hpSliderFill->GetComponent<Slider>()->SetSprite(sliderFillSprite);
+		sampleScene->AddGameObject(hpSliderFill);
+
+		player->GetComponent<PlayerController>()->SetHpSlider(hpSliderFill->GetComponent<Slider>());
+	}
+
+#pragma endregion
+
+#pragma endregion
+
+	EnemySpawnManager::GetInst()->SetTarget(player->GetTransform());
 
 	// TODO : Scene 등록하고 로드후 게임 시작
 	SceneManager::GetInst()->RegisterScene(L"SampleScene", sampleScene);
@@ -124,17 +225,20 @@ void GameLogic::Progress()
 void GameLogic::Update()
 {
 	// TODO : Update 과정
+	PhysicsManager::GetInst()->Update();
 	TimeManager::GetInst()->Update();
 	Input->Update();
+	EnemySpawnManager::GetInst()->Update();
+	SoundManager::GetInst()->Update();
 	SceneManager::GetInst()->Update();
 }
 
 void GameLogic::Render()
 {
-	PatBlt(m_memDC, 0, 0, m_Resolution.x, m_Resolution.y, WHITENESS);
+	PatBlt(m_offHdc, 0, 0, m_Resolution.x, m_Resolution.y, WHITENESS);
 
 	// TODO : Rendering 과정
 	SceneManager::GetInst()->Render();
 
-	BitBlt(m_hDC, 0, 0, m_Resolution.x, m_Resolution.y, m_memDC, 0, 0, SRCCOPY);
+	BitBlt(m_memHdc, 0, 0, m_Resolution.x, m_Resolution.y, m_offHdc, 0, 0, SRCCOPY);
 }

@@ -49,16 +49,6 @@ int Sprite::GetRow()
 	return m_row;
 }
 
-int Sprite::GetCurRow()
-{
-	return m_curRowIndex;
-}
-
-void Sprite::SetCurRow(const int& value)
-{
-	m_curRowIndex = value;
-}
-
 Vector2 Sprite::GetSize()
 {
 	Vector2 returnValue;

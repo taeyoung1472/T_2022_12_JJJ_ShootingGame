@@ -3,8 +3,9 @@
 #include "Component.h"
 #include "MonoBehaviour.h"
 #include "Transform.h"
+#include "SceneManager.h"
 
-GameObject::GameObject() : Object(OBJECT_TYPE::GAMEOBJECT)
+GameObject::GameObject() : Object(OBJECT_TYPE::GAMEOBJECT), m_tag(L"Default")
 {
 	Awake();
 }
@@ -17,92 +18,79 @@ void GameObject::Init()
 {
 }
 
-void GameObject::Awake()
+shared_ptr<GameObject> GameObject::Instantiate(Vector2 pos, shared_ptr<Transform> parent)
 {
-	for (shared_ptr<Component>& component : m_components)
-	{
-		if (component)
-			component->Awake();
+	shared_ptr<GameObject> object = make_shared<GameObject>();
+	object->AddComponent<Transform>(make_shared<Transform>());
+	object->GetTransform()->SetWorldPosition(pos);
+	if (parent != nullptr) {
+		object->GetTransform()->SetParent(parent);
+		object->GetTransform()->SetLocalPosition(pos);
 	}
 
-	for (shared_ptr<MonoBehaviour>& script : m_scripts)
-	{
-		if (script)
-			script->Awake();
+	return object;
+}
+
+void GameObject::Awake()
+{
+	map<string, shared_ptr<Component>>::iterator  i;
+	for (i = m_components.begin(); i != m_components.end(); i++) {
+		i->second->Awake();
 	}
 }
 
 void GameObject::Start()
 {
-	for (shared_ptr<Component>& component : m_components)
-	{
-		if (component)
-			component->Start();
-	}
-
-	for (shared_ptr<MonoBehaviour>& script : m_scripts)
-	{
-		if (script)
-			script->Start();
+	map<string, shared_ptr<Component>>::iterator  i;
+	for (i = m_components.begin(); i != m_components.end(); i++) {
+		i->second->Start();
 	}
 }
 
 void GameObject::Update()
 {
-	for (shared_ptr<Component>& component : m_components)
-	{
-		if (component)
-			component->Update();
-	}
-
-	for (shared_ptr<MonoBehaviour>& script : m_scripts)
-	{
-		if (script)
-			script->Update();
+	map<string, shared_ptr<Component>>::iterator  i;
+	for (i = m_components.begin(); i != m_components.end(); i++) {
+		i->second->Update();
 	}
 }
 
 void GameObject::LateUpdate()
 {
-	for (shared_ptr<Component>& component : m_components)
-	{
-		if (component)
-			component->LateUpdate();
-	}
-
-	for (shared_ptr<MonoBehaviour>& script : m_scripts)
-	{
-		if (script)
-			script->LateUpdate();
+	map<string, shared_ptr<Component>>::iterator  i;
+	for (i = m_components.begin(); i != m_components.end(); i++) {
+		i->second->LateUpdate();
 	}
 }
 
 void GameObject::FinalUpdate()
 {
-	for (shared_ptr<Component>& component : m_components)
-	{
-		if (component)
-			component->FinalUpdate();
-	}
-
-	for (shared_ptr<MonoBehaviour>& script : m_scripts)
-	{
-		if (script)
-			script->FinalUpdate();
+	map<string, shared_ptr<Component>>::iterator  i;
+	for (i = m_components.begin(); i != m_components.end(); i++) {
+		i->second->FinalUpdate();
 	}
 }
 
 void GameObject::Render()
 {
-	for (shared_ptr<Component>& component : m_components)
-	{
-		if (component)
-			component->Render();
+	map<string, shared_ptr<Component>>::iterator  i;
+	for (i = m_components.begin(); i != m_components.end(); i++) {
+		i->second->Render();
 	}
+}
 
-	for (shared_ptr<MonoBehaviour>& script : m_scripts)
-	{
-		if (script)
-			script->Render();
+void GameObject::CollisionEnter(weak_ptr<Collider> collision)
+{
+	map<string, shared_ptr<Component>>::iterator  i;
+	for (i = m_components.begin(); i != m_components.end(); i++) {
+		i->second->CollisionEnter(collision);
+	}
+}
+
+void GameObject::Destroy()
+{
+	map<string, shared_ptr<Component>>::iterator  i;
+	for (i = m_components.begin(); i != m_components.end(); i++) {
+		i->second->OnDestroy();
 	}
 }

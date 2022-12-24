@@ -17,8 +17,12 @@ public:
 	shared_ptr<Sprite> GetSprite() { return m_sprite; }
 	void SetSprite(shared_ptr<Sprite> sprite) { m_sprite = sprite; }
 
-private:
+	void MoveRow(int index) { m_curRow = (m_curRow + index) % m_sprite->GetRow(); }
+	void SetRow(int index) { m_curRow = index; }
+
+protected:
 	shared_ptr<Sprite> m_sprite;
 	Color m_alphaColor;
+	int m_curRow = 0;
 };
 

@@ -4,6 +4,7 @@
 #include "Transform.h"
 
 class MonoBehaviour;
+class Collider;
 
 class GameObject : public Object, public enable_shared_from_this<GameObject>
 {
@@ -18,10 +19,11 @@ public:
 	shared_ptr<T> AddComponent(shared_ptr<Component> component);
 
 	template<typename T>
-	shared_ptr<T> GetComponent(COMPONENT_TYPE type);
+	shared_ptr<T> GetComponent();
 
 public:
-	shared_ptr<Transform> GetTransform() { return GetComponent<Transform>(COMPONENT_TYPE::TRANSFORM); }
+	shared_ptr<Transform> GetTransform() { return GetComponent<Transform>(); }
+	static shared_ptr<GameObject> Instantiate(Vector2 pos = Vector2(0, 0), shared_ptr<Transform> parent = nullptr);
 
 public:
 	virtual void Awake();
@@ -30,35 +32,30 @@ public:
 	virtual void LateUpdate();
 	virtual void FinalUpdate();
 	virtual void Render();
+	virtual void CollisionEnter(weak_ptr<Collider> collision);
+
+public:
+	void Destroy();
+	wstring GetTag() { return m_tag; }
+	void SetTag(wstring value) { m_tag = value; }
 
 private:
-	array<shared_ptr<Component>, FIXED_COMPONENT_COUNT> m_components;
-	vector<shared_ptr<MonoBehaviour>> m_scripts;
+	map<string, shared_ptr<Component>> m_components;
+	shared_ptr<Transform> m_transform;
+	wstring m_tag;
 };
 
 template<typename T>
 shared_ptr<T> GameObject::AddComponent(shared_ptr<Component> component)
 {
 	component->SetGameObject(shared_from_this());
-
-	UINT8 index = static_cast<UINT8>(component->GetType());
-
-	if (index < FIXED_COMPONENT_COUNT)
-	{
-		m_components[index] = component;
-	}
-	else
-	{
-		m_scripts.push_back(dynamic_pointer_cast<MonoBehaviour>(component));
-	}
+	m_components.insert({ typeid(T).name(), component});
 
 	return static_pointer_cast<T>(component);
 }
 
 template<typename T>
-shared_ptr<T> GameObject::GetComponent(COMPONENT_TYPE type)
+shared_ptr<T> GameObject::GetComponent()
 {
-	UINT8 index = static_cast<UINT8>(type);
-
-	return static_pointer_cast<T>(m_components[index]);
+	return static_pointer_cast<T>(m_components[typeid(T).name()]);
 }
