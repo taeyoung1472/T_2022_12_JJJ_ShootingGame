@@ -22,6 +22,6 @@ void PathManager::Init()
 			break;
 		}
 	}
-	wcscat_s(m_ResourcePath, 255, L"\\Resources\\");
+	wcscat_s(m_ResourcePath, 255, L"\\bin\\Resources\\");
 	SetWindowText(GameLogic::GetInst()->GetWndHandle(), m_ResourcePath);
 }

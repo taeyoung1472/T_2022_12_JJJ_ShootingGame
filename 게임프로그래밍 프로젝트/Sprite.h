@@ -10,28 +10,22 @@ public:
 public:
 	BITMAP GetSprite();
 	void SetSprite(const wstring& filePath);
-	void SetPixelPerfect(const int& value);
-	float GetFixedPixelPerfect();
 
 	void SetRow(const int& value);
 	int GetRow();
-
-	int GetCurRow();
-	void SetCurRow(const int& value);
+	void SetColumn(const int& value);
+	int GetColumn();
 
 	Vector2 GetSize();
 
 	HDC GetDC() { return m_hDC; }
+	HBITMAP GetBit() { return m_sprite; }
 
 private:
 	HDC         m_hDC;
 	HBITMAP		m_sprite;
 	BITMAP		m_spriteInfo;
-
-	POINT m_vertices[3];
-
-	int m_pixelPerfect = 100;
-	int m_row = 1;
-	int m_curRowIndex = 0;
+	int m_row;
+	int m_Column;
 };
 

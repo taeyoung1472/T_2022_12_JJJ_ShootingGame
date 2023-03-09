@@ -9,12 +9,14 @@ public:
 
 public:
 	void Translate(Vector2 dir) { x += dir.x; y += dir.y; }
+	void Rotate(float value) { m_angle += value; }
 	Vector2 GetLocalPosition() { return Vector2{ x, y }; }
 	Vector2 GetWorldPosition();
 	void SetLocalPosition(Vector2 value);
 	void SetWorldPosition(Vector2 value);
 
-	float GetAngle() { return m_angle; }
+	float GetLocalRotation() { return m_angle; }
+	float GetWorldRotation();
 	void SetLocalAngle(float angle) { m_angle = angle; }
 	void SetWorldAngle(float angle);
 
