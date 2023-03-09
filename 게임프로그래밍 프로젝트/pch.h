@@ -12,6 +12,8 @@
 #include <array>
 #include <map>
 #include <assert.h>
+#include <queue>
+#include <algorithm>
 
 #include "Vector2.h"
 #include "Color.h"

@@ -5,11 +5,9 @@ class GameLogic : public BaseWindow
 {
 private:
 	POINT	m_Resolution;
-	HDC		m_memDC;
-	HDC		m_hDC;
-	HBITMAP	m_hBit;
-	//HDC		m_memDC;
-	//HBITMAP m_hBit;
+	HDC		m_offHdc;
+	HDC		m_memHdc;
+	HBITMAP m_offBit;
 
 public:
 	SINGLE(GameLogic);
@@ -24,8 +22,10 @@ public:
 	const	HWND& GetWndHandle() { return m_hWnd; }
 	const	POINT& GetResolution() { return m_Resolution; }
 
-	const   HDC GetHDC() { return m_hDC; }
-	const   HDC GetMEMDC() { return m_memDC; }
+	const   HDC GetHDC() { return m_memHdc; }
+	const   HDC GetOffHDC() { return m_offHdc; }
+
+	const   HBITMAP GetOffBit() { return m_offBit; }
 
 private:
 	void	Update();
