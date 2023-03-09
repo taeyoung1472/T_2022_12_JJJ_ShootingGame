@@ -14,6 +14,8 @@
 #include "Random.h"
 #include "Collider.h"
 #include "SoundManager.h"
+#include "Slider.h"
+#include "Math.h"
 
 EnemySpawnManager::EnemySpawnManager()
 {
@@ -37,15 +39,27 @@ void EnemySpawnManager::Update()
 	m_timer += Time->GetDeltaTime();
 	if (m_timer >= SPAWN_COOL)
 	{
+		SPAWN_COOL = Clamp(SPAWN_COOL - m_spawnCoolChangeValue, 1, 5);
 		m_timer = 0;
-		SpawnEnmey();
+
+		if (SPAWN_COOL <= 1.1f) 
+		{
+			m_spawnCoolChangeValue += 0.2f;
+			m_spawnPerEnemy++;
+			SPAWN_COOL = 5.0f;
+		}
+
+		for (int i = 0; i < m_spawnPerEnemy; i++)
+		{
+			SpawnEnmey();
+		}
 	}
 }
 
 void EnemySpawnManager::SpawnEnmey()
 {
-	shared_ptr<GameObject> enemy = make_shared<GameObject>();
-	enemy->AddComponent<Transform>(make_shared<Transform>());
+	shared_ptr<GameObject> enemy = GameObject::Instantiate();
+	enemy->AddComponent<Transform>();
 	Vector2 pos;
 	Vector2 screen = GameLogic::GetInst()->GetResolution();
 
@@ -69,17 +83,39 @@ void EnemySpawnManager::SpawnEnmey()
 	}
 	enemy->GetTransform()->SetWorldPosition(pos);
 
-	enemy->AddComponent<EnemyController>(make_shared<EnemyController>());
+	enemy->AddComponent<EnemyController>();
 	enemy->GetComponent<EnemyController>()->SetTarget(m_target);
 
-	enemy->AddComponent<SpriteRendere>(make_shared<SpriteRendere>());
+	enemy->AddComponent<SpriteRendere>();
 	shared_ptr<Sprite> enemySprite = ResourceManager::GetInst()->Load<Sprite>(L"EnemySprite", L"Sprite\\EnemyRun.bmp");
-	enemySprite->SetPixelPerfect(16);
 	enemySprite->SetRow(4);
 	enemy->GetComponent<SpriteRendere>()->SetSprite(enemySprite);
+	enemy->GetComponent<SpriteRendere>()->SetPixelPerfect(16);
 
-	enemy->AddComponent<Collider>(make_shared<Collider>());
+	enemy->AddComponent<Collider>();
 	enemy->GetComponent<Collider>()->SetSize(Vector2(75, 120));
+
+#pragma region Slider
+	shared_ptr<GameObject> hpSliderFill = GameObject::Instantiate(Vector2(0, 85), enemy->GetTransform());
+	shared_ptr<GameObject> hpSliderBackground = GameObject::Instantiate(Vector2(0, 85), enemy->GetTransform());
+
+	hpSliderFill->AddComponent<Slider>();
+	hpSliderBackground->AddComponent<SpriteRendere>();
+
+	shared_ptr<Sprite> hpSliderBackgroundSprite = ResourceManager::GetInst()->Load<Sprite>(L"hpSliderBackground", L"Sprite\\hpSliderBackground.bmp");
+	shared_ptr<Sprite> hpSliderFillSprite = ResourceManager::GetInst()->Load<Sprite>(L"hpSliderFill", L"Sprite\\hpSliderFill.bmp");
+
+	hpSliderBackground->GetComponent<SpriteRendere>()->SetPixelPerfect(75);
+	hpSliderFill->GetComponent<Slider>()->SetPixelPerfect(75);
+
+	hpSliderBackground->GetComponent<SpriteRendere>()->SetSprite(hpSliderBackgroundSprite);
+	hpSliderFill->GetComponent<Slider>()->SetSprite(hpSliderFillSprite);
+
+	enemy->GetComponent<EnemyController>()->SetSlider(hpSliderFill, hpSliderBackground);
+
+	CurScene->AddGameObject(hpSliderBackground);
+	CurScene->AddGameObject(hpSliderFill);
+#pragma endregion
 
 	enemy->SetTag(L"Enemy");
 

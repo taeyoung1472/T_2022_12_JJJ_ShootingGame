@@ -30,13 +30,13 @@ void Bullet::CollisionEnter(weak_ptr<Collider> collision)
 {
 	wstring targetTag = collision.lock()->GetGameObject()->GetTag();
 
-	if (targetTag == L"Player")
+	if (targetTag == L"Player" || targetTag == L"Item" || targetTag == L"Bullet")
 	{
 		// DoNothing
 	}
 	else if (targetTag == L"Enemy")
 	{
-		collision.lock()->GetGameObject()->GetComponent<EnemyController>()->Damage(1);
+		collision.lock()->GetGameObject()->GetComponent<EnemyController>()->Damage(m_damage);
 		CurScene->Destroy(GetGameObject());
 	}
 	else {

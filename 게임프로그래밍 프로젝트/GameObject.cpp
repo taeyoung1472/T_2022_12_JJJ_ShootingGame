@@ -21,7 +21,7 @@ void GameObject::Init()
 shared_ptr<GameObject> GameObject::Instantiate(Vector2 pos, shared_ptr<Transform> parent)
 {
 	shared_ptr<GameObject> object = make_shared<GameObject>();
-	object->AddComponent<Transform>(make_shared<Transform>());
+	object->AddComponent<Transform>();
 	object->GetTransform()->SetWorldPosition(pos);
 	if (parent != nullptr) {
 		object->GetTransform()->SetParent(parent);

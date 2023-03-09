@@ -16,7 +16,7 @@ public:
 	void Init();
 
 	template<typename T>
-	shared_ptr<T> AddComponent(shared_ptr<Component> component);
+	shared_ptr<T> AddComponent();
 
 	template<typename T>
 	shared_ptr<T> GetComponent();
@@ -46,8 +46,9 @@ private:
 };
 
 template<typename T>
-shared_ptr<T> GameObject::AddComponent(shared_ptr<Component> component)
+shared_ptr<T> GameObject::AddComponent()
 {
+	shared_ptr<Component> component = make_shared<T>();
 	component->SetGameObject(shared_from_this());
 	m_components.insert({ typeid(T).name(), component});
 

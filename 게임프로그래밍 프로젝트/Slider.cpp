@@ -38,7 +38,7 @@ void Slider::Render()
 	Vector2 pos = GetTransform()->GetWorldPosition();
 	Vector2 size = m_sprite->GetSize();
 
-	float fixedPixelPerfect = m_sprite->GetFixedPixelPerfect();
+	float fixedPixelPerfect = GetFixedPixelPerfect();
 
 	RECT Rt;
 	GetClientRect(mHwnd, &Rt);

@@ -15,7 +15,7 @@
 #include "Collider.h"
 #include "SoundManager.h"
 
-Gun::Gun()
+Gun::Gun() : m_damage(1), m_firePos(40, -10)
 {
 }
 
@@ -27,12 +27,12 @@ void Gun::Awake()
 {
 	SoundManager::GetInst()->LoadSound(L"GunFire", false, L"Audio\\GunFire.wav");
 	shared_ptr<Sprite> gunSprite = ResourceManager::GetInst()->Load<Sprite>(L"GunSprite", L"Sprite\\ARShoot.bmp");
-	gunSprite->SetPixelPerfect(64);
+	gunSprite->SetColumn(2);
 	gunSprite->SetRow(16);
 	m_gunSprite = gunSprite;
 
-	originPos = GetTransform()->GetLocalPosition();
-	knockBackPos = originPos - Vector2(20, 0);
+	m_originPos = GetTransform()->GetLocalPosition();
+	m_knockBackPos = m_originPos - Vector2(20, 0);
 
 	GetGameObject()->GetComponent<SpriteRendere>()->SetSprite(m_gunSprite);
 	originY = GetTransform()->y;
@@ -59,33 +59,36 @@ void Gun::Update()
 			if (m_timer > m_fireDelay * 0.5f) 
 			{
 				lerpValue = (m_timer - m_fireDelay * 0.5f) * 2 / m_fireDelay;
-				GetTransform()->SetLocalPosition(Lerp(originPos, knockBackPos * m_randKnockbackPower, lerpValue));
+				GetTransform()->SetLocalPosition(Lerp(m_originPos, m_knockBackPos * m_randKnockbackPower, lerpValue));
 			}
 			else 
 			{
 				lerpValue = m_timer * 2 / m_fireDelay;
-				GetTransform()->SetLocalPosition(Lerp(knockBackPos * m_randKnockbackPower, originPos, lerpValue));
+				GetTransform()->SetLocalPosition(Lerp(m_knockBackPos * m_randKnockbackPower, m_originPos, lerpValue));
 			}
 		}
 	}
 
 	if (Input->GetKey(KeyCode::LBUTTON) && m_timer > m_fireDelay && !isFire)
 	{
-		shared_ptr<GameObject> bullet = GameObject::Instantiate(GetTransform()->GetWorldPosition() + Vector2(40, -10));
+		shared_ptr<GameObject> bullet = GameObject::Instantiate(GetTransform()->GetWorldPosition() + m_firePos);
 
-		Vector2 dir = Normalize(Vector2(Input->GetMousePos()) - GetTransform()->GetWorldPosition() + Vector2(40, -10));
+		Vector2 dir = Normalize(Vector2(Input->GetMousePos()) - (GetTransform()->GetWorldPosition() + m_firePos));
 
-		bullet->AddComponent<Bullet>(make_shared<Bullet>());
+		bullet->AddComponent<Bullet>();
 		bullet->GetComponent<Bullet>()->SetDir(dir);
 		bullet->GetComponent<Bullet>()->SetSpeed(750);
+		bullet->GetComponent<Bullet>()->SetDamage(m_damage);
 
-		bullet->AddComponent<SpriteRendere>(make_shared<SpriteRendere>());
+		bullet->AddComponent<SpriteRendere>();
 		shared_ptr<Sprite> bulletSprite = ResourceManager::GetInst()->Load<Sprite>(L"BulletSprite", L"Sprite\\Bullet.bmp");
-		bulletSprite->SetPixelPerfect(200);
 		bullet->GetComponent<SpriteRendere>()->SetSprite(bulletSprite);
+		bullet->GetComponent<SpriteRendere>()->SetPixelPerfect(200);
 
-		bullet->AddComponent<Collider>(make_shared<Collider>());
+		bullet->AddComponent<Collider>();
 		bullet->GetComponent<Collider>()->SetSize(Vector2(25, 25));
+
+		bullet->SetTag(L"Bullet");
 
 		SoundManager::GetInst()->Play(L"GunFire");
 
@@ -98,4 +101,28 @@ void Gun::Update()
 	GetTransform()->y = originY + sin(Time->GetTime() * 5) * 5;
 
 	m_timer += Time->GetDeltaTime();
+}
+
+void Gun::SetOriginPosAndKnockBackPosAndFirePos(Vector2 origin, Vector2 knockBack, Vector2 firePos)
+{
+	m_originPos = origin;
+	m_knockBackPos = knockBack;
+	m_firePos = firePos;
+}
+
+void Gun::FireRateUpgrade()
+{
+	m_fireDelay -= 0.02f;
+
+	if (m_fireDelay <= 0.07f) {
+		if (m_damage == 2) 
+		{
+			m_fireDelay = 0.06f;
+		}
+		else 
+		{
+			m_fireDelay = 0.12f;
+			m_damage++;
+		}
+	}
 }

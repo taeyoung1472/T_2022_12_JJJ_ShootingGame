@@ -20,9 +20,17 @@ public:
 	void MoveRow(int index) { m_curRow = (m_curRow + index) % m_sprite->GetRow(); }
 	void SetRow(int index) { m_curRow = index; }
 
+	void MoveColumn(int index) { m_curColumn = (m_curColumn + index) % m_sprite->GetColumn(); }
+	void SetColumn(int index) { m_curColumn = index; }
+
+	void SetPixelPerfect(const int& value);
+	float GetFixedPixelPerfect();
+
 protected:
 	shared_ptr<Sprite> m_sprite;
 	Color m_alphaColor;
 	int m_curRow = 0;
+	int m_curColumn = 0;
+	int m_pixelPerfect;
 };
 

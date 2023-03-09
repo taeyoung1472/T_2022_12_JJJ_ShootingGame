@@ -4,8 +4,8 @@
 enum class ITEM_TYPE
 {
 	HP,
-	OTHER1,
-	OTHER2,
+	FIRE_RATE,
+	SPEED,
 	END
 };
 

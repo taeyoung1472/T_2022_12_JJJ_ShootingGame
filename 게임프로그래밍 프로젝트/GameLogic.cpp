@@ -71,29 +71,33 @@ int GameLogic::Init(HWND _hWnd, POINT _ptResolution)
 		shared_ptr<GameObject> background = GameObject::Instantiate(Vector2(resolution.x / 2, resolution.y / 2));
 
 		shared_ptr<Sprite> backgroundSprit = ResourceManager::GetInst()->Load<Sprite>(L"backgroundSprite", L"Sprite\\background.bmp");
-		backgroundSprit->SetPixelPerfect(25);
 
-		background->AddComponent<SpriteRendere>(make_shared<SpriteRendere>());
+		background->AddComponent<SpriteRendere>();
 		background->GetComponent<SpriteRendere>()->SetSprite(backgroundSprit);
+		background->GetComponent<SpriteRendere>()->SetPixelPerfect(25);
 
 		sampleScene->AddGameObject(background);
+
 	}
 #pragma endregion
 
 #pragma region Player
-	shared_ptr<GameObject> player = GameObject::Instantiate();
-	player->AddComponent<PlayerController>(make_shared<PlayerController>());
+	Vector2 resolution = GetResolution();
 
-	player->AddComponent<SpriteRendere>(make_shared<SpriteRendere>());
+	shared_ptr<GameObject> player = GameObject::Instantiate(resolution / 2);
+	player->AddComponent<PlayerController>();
+
+	player->AddComponent<SpriteRendere>();
 	shared_ptr<Sprite> playerSprite = ResourceManager::GetInst()->Load<Sprite>(L"PlayerSprite", L"Sprite\\PlayerIdle.bmp");
-	playerSprite->SetPixelPerfect(16);
 	playerSprite->SetRow(4);
+	playerSprite->SetColumn(2);
 
-	player->AddComponent<Collider>(make_shared<Collider>());
+	player->AddComponent<Collider>();
 	player->GetComponent<Collider>()->SetSize(Vector2(75, 75));
 	player->GetComponent<Collider>()->SetCenter(Vector2(0, 35));
 
 	player->GetComponent<SpriteRendere>()->SetSprite(playerSprite);
+	player->GetComponent<SpriteRendere>()->SetPixelPerfect(16);
 
 	player->SetTag(L"Player");
 
@@ -102,8 +106,11 @@ int GameLogic::Init(HWND _hWnd, POINT _ptResolution)
 
 #pragma region Gun
 	shared_ptr<GameObject> gun = GameObject::Instantiate(Vector2(75, 52), player->GetTransform());
-	gun->AddComponent<SpriteRendere>(make_shared<SpriteRendere>());
-	gun->AddComponent<Gun>(make_shared<Gun>());
+	gun->AddComponent<SpriteRendere>();
+	gun->AddComponent<Gun>();
+	gun->GetComponent<SpriteRendere>()->SetPixelPerfect(64);
+
+	player->GetComponent<PlayerController>()->SetGun(gun->GetComponent<Gun>());
 
 	sampleScene->AddGameObject(gun);
 #pragma endregion
@@ -112,19 +119,21 @@ int GameLogic::Init(HWND _hWnd, POINT _ptResolution)
 	{
 		shared_ptr<Sprite> handSprite = ResourceManager::GetInst()->Load<Sprite>(L"Hand", L"Sprite\\Hand.bmp");
 
-		handSprite->SetPixelPerfect(80);
-
 		shared_ptr<GameObject> FrontHand = GameObject::Instantiate(Vector2(-10, -2), gun->GetTransform());
-		FrontHand->AddComponent<SpriteRendere>(make_shared<SpriteRendere>());
+		FrontHand->AddComponent<SpriteRendere>();
+		FrontHand->GetComponent<SpriteRendere>()->SetPixelPerfect(80);
 		FrontHand->GetComponent<SpriteRendere>()->SetSprite(handSprite);
 
 		sampleScene->AddGameObject(FrontHand);
 
 		shared_ptr<GameObject> BehindHand = GameObject::Instantiate(Vector2(-50, 10), gun->GetTransform());
-		BehindHand->AddComponent<SpriteRendere>(make_shared<SpriteRendere>());
+		BehindHand->AddComponent<SpriteRendere>();
+		BehindHand->GetComponent<SpriteRendere>()->SetPixelPerfect(80);
 		BehindHand->GetComponent<SpriteRendere>()->SetSprite(handSprite);
 
 		sampleScene->AddGameObject(BehindHand);
+
+		player->GetComponent<PlayerController>()->SetHand(FrontHand->GetTransform(), BehindHand->GetTransform());
 	}
 #pragma endregion
 
@@ -137,7 +146,7 @@ int GameLogic::Init(HWND _hWnd, POINT _ptResolution)
 		{
 			shared_ptr<GameObject> border = GameObject::Instantiate(Vector2(-borderSpace / 2, resolution.y / 2));
 
-			border->AddComponent<Collider>(make_shared<Collider>());
+			border->AddComponent<Collider>();
 			border->GetComponent<Collider>()->SetSize(Vector2(borderSpace, resolution.y));
 
 			sampleScene->AddGameObject(border);
@@ -146,7 +155,7 @@ int GameLogic::Init(HWND _hWnd, POINT _ptResolution)
 		{
 			shared_ptr<GameObject> border = GameObject::Instantiate(Vector2(resolution.x + borderSpace / 2, resolution.y / 2));
 
-			border->AddComponent<Collider>(make_shared<Collider>());
+			border->AddComponent<Collider>();
 			border->GetComponent<Collider>()->SetSize(Vector2(borderSpace, resolution.y));
 
 			sampleScene->AddGameObject(border);
@@ -155,7 +164,7 @@ int GameLogic::Init(HWND _hWnd, POINT _ptResolution)
 		{
 			shared_ptr<GameObject> border = GameObject::Instantiate(Vector2(resolution.x / 2, -borderSpace / 2));
 
-			border->AddComponent<Collider>(make_shared<Collider>());
+			border->AddComponent<Collider>();
 			border->GetComponent<Collider>()->SetSize(Vector2(resolution.x, borderSpace));
 
 			sampleScene->AddGameObject(border);
@@ -164,7 +173,7 @@ int GameLogic::Init(HWND _hWnd, POINT _ptResolution)
 		{
 			shared_ptr<GameObject> border = GameObject::Instantiate(Vector2(resolution.x / 2, resolution.y + borderSpace / 2));
 
-			border->AddComponent<Collider>(make_shared<Collider>());
+			border->AddComponent<Collider>();
 			border->GetComponent<Collider>()->SetSize(Vector2(resolution.x, borderSpace));
 
 			sampleScene->AddGameObject(border);
@@ -181,17 +190,17 @@ int GameLogic::Init(HWND _hWnd, POINT _ptResolution)
 		Vector2 displayPos = Vector2(425, 675);
 
 		shared_ptr<GameObject> hpSliderBackground = GameObject::Instantiate(displayPos);
-		hpSliderBackground->AddComponent<SpriteRendere>(make_shared<SpriteRendere>());
+		hpSliderBackground->AddComponent<SpriteRendere>();
 		shared_ptr<Sprite> sliderBackgroundSprite = ResourceManager::GetInst()->Load<Sprite>(L"hpSliderBackground", L"Sprite\\hpSliderBackground.bmp");
-		sliderBackgroundSprite->SetPixelPerfect(16);
+		hpSliderBackground->GetComponent<SpriteRendere>()->SetPixelPerfect(16);
 		hpSliderBackground->GetComponent<SpriteRendere>()->SetSprite(sliderBackgroundSprite);
 		sampleScene->AddGameObject(hpSliderBackground);
 
 
 		shared_ptr<GameObject> hpSliderFill = GameObject::Instantiate(displayPos);
-		hpSliderFill->AddComponent<Slider>(make_shared<Slider>());
+		hpSliderFill->AddComponent<Slider>();
 		shared_ptr<Sprite> sliderFillSprite = ResourceManager::GetInst()->Load<Sprite>(L"hpSliderFill", L"Sprite\\hpSliderFill.bmp");
-		sliderFillSprite->SetPixelPerfect(16);
+		hpSliderFill->GetComponent<Slider>()->SetPixelPerfect(16);
 		hpSliderFill->GetComponent<Slider>()->SetSprite(sliderFillSprite);
 		sampleScene->AddGameObject(hpSliderFill);
 

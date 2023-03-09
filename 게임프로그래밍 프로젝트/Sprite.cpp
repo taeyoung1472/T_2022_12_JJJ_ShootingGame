@@ -2,7 +2,7 @@
 #include "Sprite.h"
 #include "GameLogic.h"
 
-Sprite::Sprite() : Object(OBJECT_TYPE::IMAGE), m_hDC(0)
+Sprite::Sprite() : Object(OBJECT_TYPE::IMAGE), m_hDC(0), m_row(1), m_Column(1)
 {
 
 }
@@ -29,16 +29,6 @@ void Sprite::SetSprite(const wstring& filePath)
 	GetObject(m_sprite, sizeof(BITMAP), &m_spriteInfo);
 }
 
-void Sprite::SetPixelPerfect(const int& value)
-{
-	m_pixelPerfect = value;
-}
-
-float Sprite::GetFixedPixelPerfect()
-{
-	return 100.f / m_pixelPerfect;
-}
-
 void Sprite::SetRow(const int& value)
 {
 	m_row = value;
@@ -47,6 +37,16 @@ void Sprite::SetRow(const int& value)
 int Sprite::GetRow()
 {
 	return m_row;
+}
+
+void Sprite::SetColumn(const int& value)
+{
+	m_Column = value;
+}
+
+int Sprite::GetColumn()
+{
+	return m_Column;
 }
 
 Vector2 Sprite::GetSize()
